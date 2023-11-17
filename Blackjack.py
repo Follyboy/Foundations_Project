@@ -1,4 +1,4 @@
-import numpy as np
+#%%
 import random
 
 #This function deals n cards and from the deck and removes them
@@ -59,6 +59,18 @@ def show_instructions():
     instructions="uhh idk"
     print(instructions)
 
+def choose_difficulty(level):
+    cash = 0
+    level = level.lower()
+    if level == 'hard':
+        cash = 100
+    elif level == 'medium':
+        cash = 300
+    elif level == 'easy':
+        cash = 500
+    
+    return cash
+
 def game(cash, deck, bet):
     busted=False
     #Hand is the players hand, FDC is the dealers facedown card, table is the dealer's face up card
@@ -91,7 +103,7 @@ def game(cash, deck, bet):
         print("eek")
         #End
     print(f"Your Score: {HS}")
-    print(f"Your bet: {bet}")
+    print(f"Your bet: ${bet}")
    #This is where the player can choose to stand or hit (or get instructions/ quit)
     while True:
         I = input("Decision time: enter s to stand or h to hit. Enter i for instructions or q to quit")
@@ -181,9 +193,14 @@ def start():
         if C=='q' or C=='b':
             break
     if C=='b':
-    #NEED A DIFFICULTY SELECTION HERE
-        print("You are starting out with $100, if run out, you are done!")
-        cash = 100
+    # Difficulty level determines amount of cash the player is given
+        difficulty_level = str(input('Choose difficulty (easy/medium/hard):')).lower()
+        while difficulty_level not in ['easy', 'meduium', 'hard']:
+            difficulty_level = str(input('Must choose difficulty (easy/medium/hard):'))
+
+        cash = choose_difficulty(difficulty_level)
+        print(f"You are starting out with ${cash}, if run out, you are done!")
+        # cash = 100
     #Arbitrary Win limit, so the player can have a final victory
         limit=cash*20
         while cash > 0:
@@ -235,3 +252,5 @@ start()
 
 
 
+
+# %%
