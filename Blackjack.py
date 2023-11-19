@@ -67,34 +67,37 @@ def set_bet(cash):
     return(cash,bet)
 #===================== NEED TO FINISH THE INSTRUCTIONS FUNCTION===========================VVVVV
 def show_instructions():
-    instructions = """ Get ready to play Blackjack!
+    """
+    Display game instructions.
+    """
+    instructions = """
+        Get ready to play Blackjack!
 
-    Objective:
-       - The goal of the game is to have a hand with a total score as close to 21 as possible without exceeding it.
+        Objective:
+        - The goal of the game is to have a hand with a total score as close to 21 as possible without exceeding it.
 
-    Gameplay:
-       1. At the beginning of each round, you'll be prompted to place a bet using a portion of your available cash.
-       2. The dealer will then shuffle the deck and deal two cards to you.
-       3. Your hand's score is calculated based on the values of the cards. Number cards contribute their face value, face cards (J, Q, K) contribute 10, and Aces can be either 1 or 11.
-       4. You can choose to "hit" (receive an additional card) or "stand" (keep your current hand).
-       5. Be strategic in your decisions. If your total score exceeds 21, you "bust," and the round is lost.
-       6. After you decide to stand, the dealer reveals their hand and follows a set of rules. The dealer will keep hitting until their hand is 17 or higher.
-       7. The winner of the round is the one with a hand closest to 21 without busting.
+        Gameplay:
+        1. At the beginning of each round, you'll be prompted to place a bet using a portion of your available cash.
+        2. The dealer will then shuffle the deck and deal two cards to you.
+        3. Your hand's score is calculated based on the values of the cards. Number cards contribute their face value, face cards (J, Q, K) contribute 10, and Aces can be either 1 or 11.
+        4. You can choose to "hit" (receive an additional card) or "stand" (keep your current hand).
+        5. Be strategic in your decisions. If your total score exceeds 21, you "bust," and the round is lost.
+        6. After you decide to stand, the dealer reveals their hand and follows a set of rules. The dealer will keep hitting until their hand is 17 or higher.
+        7. The winner of the round is the one with a hand closest to 21 without busting.
 
-    Scoring:
-       - If you have an Ace and a 10-value card (10, J, Q, K) in your initial two cards, you have a "blackjack" and win the round instantly.
+        Scoring:
+        - If you have an Ace and a 10-value card (10, J, Q, K) in your initial two cards, you have a "blackjack" and win the round instantly.
 
-    Betting:
-       - You start with a certain amount of cash. Adjust your bets wisely to maximize your winnings.
+        Betting:
+        - You start with a certain amount of cash. Adjust your bets wisely to maximize your winnings.
 
-    Commands:
-       - Type "hit" to receive another card.
-       - Type "stand" to keep your current hand.
+        Commands:
+        - Type "hit" to receive another card.
+        - Type "stand" to keep your current hand.
 
-    Enjoy the game and good luck!"""
+    Enjoy the game and good luck!
+    """
     print(instructions)
-
-show_instructions()
 
 def choose_difficulty(level):
     cash = 0
@@ -108,21 +111,146 @@ def choose_difficulty(level):
     
     return cash
 
-def game(cash, deck, bet):
+def player_hit(deck, hand):
+    deck,h=shuffle_deal(deck,1)
+    for card in h:
+        hand.append(card)
+    return hand
+
+def dealer_play(deck, dealer_hand):
+    while score(dealer_hand) < 17:
+        dealer_hand = player_hit(deck, dealer_hand)
+    return dealer_hand
+
+def determine_winner(player_hand, dealer_hand, bet, cash):
+    player_score = score(player_hand)
+    dealer_score = score(dealer_hand)
+
+    if player_score > 21:
+        print("Player busts! Dealer wins.")
+        return cash
+
+    if dealer_score > 21:
+        print(f"Dealer is busted. You win ${bet}")
+        return cash + 2 * bet
+
+    if player_score == dealer_score:
+        print("It's a tie. You got your bet back")
+        return cash + bet
+
+    if player_score > dealer_score:
+        print(f"You Win! You won ${bet}")
+        return cash + 2 * bet
+
+    print("The Dealer won! Better luck next time...")
+    print(f"Remaining Cash: ${cash}")
+    return cash
+
+def double_down(deck, hand, bet, cash):
+    dd_choice = input("Do you want to double your bet? (y/n)").lower()
+
+    if dd_choice =='y':
+        if bet < cash:
+            bet *= 2 #doubling bet
+            cash-=bet
+            print(f"Your bet is now ${bet}")
+        else:
+            print("You don't have the money to double your bet")
+
+
+    # Deal one additional card after doubling down
+    deck, additional_card = shuffle_deal(deck, 1)
+    hand.append(additional_card[0])
+    print(f"Your Hand after double down: {hand}")
+
+def can_split(hand, remaining_cash, bet):
+    return len(hand) == 2 and hand[0] == hand[1] and remaining_cash >= bet
+    
+def split_pairs(hand, deck, cash, bet):
+    deck,dealer_hand_before=shuffle_deal(deck,2) # Dealer hand (one face down and one face up)
+    new_hands = [hand[0], hand[1]]  # Split the hand into two separate hands
+    dealer_hand_after = dealer_play(deck, dealer_hand_before)
+    busted = False
+    
+    choice = input("Do you want to split? Enter 'y' or 'n': ")
+    if choice.lower() == 'y':
+        cash = cash - bet
+        for idx, new_hand in enumerate(new_hands):
+            deck, h = shuffle_deal(deck,1)
+            new_hand = [new_hand, h[0]]
+            print(f"\nPlaying Hand {idx + 1}: {new_hand}")
+            print(f"Dealer Cards: [Face Down Card, {dealer_hand_before[1]}]")
+
+            HS=score(new_hand)
+            TS=score(dealer_hand_after)
+            if HS == 21 and TS==21:
+                cash = cash + bet
+                I = 's'
+                print('It\'s a tie, you get your money back.')
+                #Need an End Condition
+            elif HS==21:
+                #Instant Win
+                I = 's'
+                cash = cash + 2 * bet
+                print(f"Black Jack! You Win ${bet}!")
+                #Need an End
+            else:
+                while True:
+                    I = input("Decision time: enter s to stand or h to hit. Enter i for instructions or q to quit")
+                    if type(I)!= str:
+                        print("Invalid Input, please try again!.")
+                        continue
+                    if I=='i':
+                        show_instructions()
+                        continue
+
+                    if I == 'h':
+                        new_hand = player_hit(deck, new_hand)
+                        print(f"Your Hand: {new_hand}")
+                        HS=score(new_hand)
+
+                        if HS>21:
+                            print("You're busted")
+                            busted=True
+                            break
+                        else:
+                            continue
+
+                    if I == 's' or I=='q':
+                        break
+
+                #Mid-game Quit:
+                if I == 'q':
+                    cash = "Q"
+                
+                if busted==True:
+                    print("Better luck next round!")
+                    print(f"Remaining money: ${cash}")
+                    cash = cash
+                else:
+                    #Dealer play:
+                    print(f"Dealer's Face Down Card was:{dealer_hand_before[0]}")
+
+                    print("Table:", dealer_hand_before)
+                    print("The Dealer Draws:")
+                    print(f"Table Cards: {dealer_hand_after}")
+                    cash = determine_winner(new_hand, dealer_hand_after, bet, cash)
+        return cash
+    else:
+        return game(cash, deck, bet, hand)
+
+def game(cash, deck, bet, hand):
     busted=False
-    #Hand is the players hand, FDC is the dealers facedown card, table is the dealer's face up card
-    hand=[]
+
+    #FDC is the dealers facedown card, table is the dealer's face up card
     FDC=[]
     table=['Face Down Card']
 
     #Dealing cards
     #It is formatted like this bc: the shuffle_deal function outputs the new deck and the dealt cards
-    deck,h=shuffle_deal(deck,2)
     deck,f=shuffle_deal(deck,1)
     deck,t=shuffle_deal(deck,1)
 
-    for i in h:
-        hand.append(i)
     for i in f:
         FDC.append(i)
     for i in t:
@@ -136,21 +264,7 @@ def game(cash, deck, bet):
     initial_numeric_hand = score(hand)
 
     if initial_numeric_hand is not None and initial_numeric_hand in [9, 10, 11]:
-        dd_choice = input("Do you want to double your bet? (y/n)").lower()
-
-        if dd_choice =='y':
-            if bet <cash:
-                bet *= 2 #doubling bet
-                cash-=bet
-                print(f"Your bet is now ${bet}")
-            else:
-                print("You don't have the money to double your bet")
-
-
-        # Deal one additional card after doubling down
-        deck, additional_card = shuffle_deal(deck, 1)
-        hand.append(additional_card[0])
-        print(f"Your Hand after double down: {hand}")
+        double_down(deck, hand, bet, cash)
 
     HS=score(hand)
     TS=score(table[1:])+score(FDC)
@@ -177,71 +291,47 @@ def game(cash, deck, bet):
             continue
 
         if I == 'h':
-            deck, h = shuffle_deal(deck, 1)
-            for i in h:
-                hand.append(i)
+            hand = player_hit(deck, hand)
             print(f"Your Hand: {hand}")
             HS=score(hand)
+
             if HS>21:
                 print("You're busted")
                 busted=True
                 break
             else:
                 continue
+
         if I == 's' or I=='q':
             break
+
     #Mid-game Quit:
     if I == 'q':
         return ("Q")
+    
     #This condition triggers if the player is busted. Instantly loses the game
     if busted==True:
         print("Better luck next round!")
         print(f"Remaining money: ${cash}")
-        return(cash)
+        return cash
     else:
         #Dealer play:
         print(f"Dealer's Face Down Card was:{FDC[0]}")
+
         table=table[1:]
         table.append(FDC[0])
-        print("Table:", table)
-        TS=score(table)
-        #This is to force the dealer to draw
-        if TS < 17:
-            while True:
-                    print("The Dealer Draws:")
-                    deck,t=shuffle_deal(deck,1)
-                    for i in t:
-                        table.append(i)
-                    print(f"Table Cards: {table}")
-                    TS = score(table)
-                    if TS <17:
-                        continue
-                    else:
-                        break
-        #Possible endings:
 
-        #Dealer goes over 21
-        if TS>21:
-            print(f"Dealer is busted. You win ${bet}")
-            cash+= (2*bet)
-            return(cash)
-        HS = score(hand)
-        #Player beats dealer
-        if HS > TS:
-            print(f"You Win! You won ${bet}")
-            cash += (2 * bet)
-            return (cash)
-        #Tie
-        elif HS == TS:
-            print("Its a tie. You got your bet back")
-            cash+=bet
-            return(cash)
-        #Player loses to dealer
-        else:
-            print("The Dealer won! Better luck next time...")
-            print(f"Remaining Cash: ${cash}")
-            return(cash)
-        
+        print("Table:", table)
+        # TS=score(table)
+
+        #This is to force the dealer to draw
+        table = dealer_play(deck, table)
+        print("The Dealer Draws:")
+        print(f"Table Cards: {table}")
+        # TS = score(table)
+        return determine_winner(hand, table, bet, cash)
+
+    
 #============= This is the function that actually starts the game. Think of it as a main menu
 def start():
     """
@@ -274,7 +364,6 @@ def start():
 
         cash = choose_difficulty(difficulty_level)
         print(f"You are starting out with ${cash}, if run out, you are done!")
-        # cash = 100
     #Arbitrary Win limit, so the player can have a final victory
         limit = cash * 20
 
@@ -285,7 +374,20 @@ def start():
             Diamonds = Hearts.copy()
             deck = Hearts + Clubs + Spades + Diamonds
             cash,bet=set_bet(cash)
-            cash=game(cash,deck,bet)
+
+            #Player's hand
+            hand=[]
+
+            #Dealing cards
+            deck,h=shuffle_deal(deck,2)
+
+            for i in h:
+                hand.append(i)
+
+            if can_split(hand, cash, bet):
+                cash = split_pairs(hand, deck, cash, bet)
+            else:
+                cash=game(cash, deck, bet, hand)
             
             #To ask players if they want another game
             while True:
