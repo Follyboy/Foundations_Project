@@ -95,8 +95,8 @@ def show_instructions():
         - Type "hit" to receive another card.
         - Type "stand" to keep your current hand.
 
-        Enjoy the game and good luck!
-        """
+    Enjoy the game and good luck!
+    """
     print(instructions)
 
 def choose_difficulty(level):
@@ -146,12 +146,17 @@ def determine_winner(player_hand, dealer_hand, bet, cash):
     print(f"Remaining Cash: ${cash}")
     return cash
 
-def double_down(deck, hand, bet):
+def double_down(deck, hand, bet, cash):
     dd_choice = input("Do you want to double your bet? (y/n)").lower()
 
     if dd_choice =='y':
-        bet *= 2 #doubling bet
-        print(f"Your bet is now ${bet}")
+        if bet < cash:
+            bet *= 2 #doubling bet
+            cash-=bet
+            print(f"Your bet is now ${bet}")
+        else:
+            print("You don't have the money to double your bet")
+
 
     # Deal one additional card after doubling down
     deck, additional_card = shuffle_deal(deck, 1)
@@ -259,7 +264,7 @@ def game(cash, deck, bet, hand):
     initial_numeric_hand = score(hand)
 
     if initial_numeric_hand is not None and initial_numeric_hand in [9, 10, 11]:
-        double_down(deck, hand, bet)
+        double_down(deck, hand, bet, cash)
 
     HS=score(hand)
     TS=score(table[1:])+score(FDC)
@@ -369,7 +374,6 @@ def start():
             Diamonds = Hearts.copy()
             deck = Hearts + Clubs + Spades + Diamonds
             cash,bet=set_bet(cash)
-            print(f"Remaining cash: ${cash}")
 
             #Player's hand
             hand=[]
