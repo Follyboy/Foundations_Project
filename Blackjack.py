@@ -67,11 +67,7 @@ def set_bet(cash):
     return(cash,bet)
 #===================== NEED TO FINISH THE INSTRUCTIONS FUNCTION===========================VVVVV
 def show_instructions():
-     """
-    Display game instructions.
-    """
-instructions = """
-    Get ready to play Blackjack!
+    instructions = """ Get ready to play Blackjack!
 
     Objective:
        - The goal of the game is to have a hand with a total score as close to 21 as possible without exceeding it.
@@ -95,9 +91,10 @@ instructions = """
        - Type "hit" to receive another card.
        - Type "stand" to keep your current hand.
 
-    Enjoy the game and good luck!
-    """
-print(instructions)
+    Enjoy the game and good luck!"""
+    print(instructions)
+
+show_instructions()
 
 def choose_difficulty(level):
     cash = 0
@@ -142,8 +139,13 @@ def game(cash, deck, bet):
         dd_choice = input("Do you want to double your bet? (y/n)").lower()
 
         if dd_choice =='y':
-            bet *= 2 #doubling bet
-            print(f"Your bet is now ${bet}")
+            if bet <cash:
+                bet *= 2 #doubling bet
+                cash-=bet
+                print(f"Your bet is now ${bet}")
+            else:
+                print("You don't have the money to double your bet")
+
 
         # Deal one additional card after doubling down
         deck, additional_card = shuffle_deal(deck, 1)
@@ -283,7 +285,6 @@ def start():
             Diamonds = Hearts.copy()
             deck = Hearts + Clubs + Spades + Diamonds
             cash,bet=set_bet(cash)
-            print(f"Remaining cash: ${cash}")
             cash=game(cash,deck,bet)
             
             #To ask players if they want another game
