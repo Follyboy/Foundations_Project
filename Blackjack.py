@@ -208,6 +208,7 @@ def split_pairs(hand, deck, cash, bet):
                         new_hand = player_hit(deck, new_hand)
                         print(f"Your Hand: {new_hand}")
                         HS=score(new_hand)
+                        print(f"Your Score: {HS}")
 
                         if HS>21:
                             print("You're busted")
@@ -294,6 +295,7 @@ def game(cash, deck, bet, hand):
             hand = player_hit(deck, hand)
             print(f"Your Hand: {hand}")
             HS=score(hand)
+            print(f"Your Score: {HS}")
 
             if HS>21:
                 print("You're busted")
@@ -371,7 +373,7 @@ def start():
         limit = cash * 20
 
         while cash > 0:
-            print(f"\n-------------------- Round {round_number} --------------------")
+            print(f"\n------------ Round {round_number} --------------------")
             Hearts = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A']
             Clubs = Hearts.copy()
             Spades = Hearts.copy()
