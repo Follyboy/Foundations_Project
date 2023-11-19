@@ -169,54 +169,67 @@ def split_pairs(hand, deck, cash, bet):
     
     choice = input("Do you want to split? Enter 'y' or 'n': ")
     if choice.lower() == 'y':
+        cash = cash - bet
         for idx, new_hand in enumerate(new_hands):
             deck, h = shuffle_deal(deck,1)
             new_hand = [new_hand, h[0]]
             print(f"\nPlaying Hand {idx + 1}: {new_hand}")
             print(f"Dealer Cards: [Face Down Card, {dealer_hand_before[1]}]")
-            while True:
-                I = input("Decision time: enter s to stand or h to hit. Enter i for instructions or q to quit")
-                if type(I)!= str:
-                    print("Invalid Input, please try again!.")
-                    continue
-                if I=='i':
-                    show_instructions()
-                    continue
 
-                if I == 'h':
-                    new_hand = player_hit(deck, new_hand)
-                    print(f"Your Hand: {new_hand}")
-                    HS=score(new_hand)
-
-                    if HS>21:
-                        print("You're busted")
-                        busted=True
-                        break
-                    else:
+            HS=score(new_hand)
+            TS=score(dealer_hand_after)
+            if HS == 21 and TS==21:
+                cash = cash + bet
+                I = 's'
+                print('It\'s a tie, you get your money back.')
+                #Need an End Condition
+            elif HS==21:
+                #Instant Win
+                I = 's'
+                cash = cash + 2 * bet
+                print(f"Black Jack! You Win ${bet}!")
+                #Need an End
+            else:
+                while True:
+                    I = input("Decision time: enter s to stand or h to hit. Enter i for instructions or q to quit")
+                    if type(I)!= str:
+                        print("Invalid Input, please try again!.")
+                        continue
+                    if I=='i':
+                        show_instructions()
                         continue
 
-                if I == 's' or I=='q':
-                    break
+                    if I == 'h':
+                        new_hand = player_hit(deck, new_hand)
+                        print(f"Your Hand: {new_hand}")
+                        HS=score(new_hand)
 
-            #Mid-game Quit:
-            if I == 'q':
-                cash = "Q"
-            
-            if busted==True:
-                print("Better luck next round!")
-                if idx == 1:
-                    cash -= bet
-                else:
+                        if HS>21:
+                            print("You're busted")
+                            busted=True
+                            break
+                        else:
+                            continue
+
+                    if I == 's' or I=='q':
+                        break
+
+                #Mid-game Quit:
+                if I == 'q':
+                    cash = "Q"
+                
+                if busted==True:
+                    print("Better luck next round!")
+                    print(f"Remaining money: ${cash}")
                     cash = cash
-                print(f"Remaining money: ${cash}")
-            else:
-                #Dealer play:
-                print(f"Dealer's Face Down Card was:{dealer_hand_before[0]}")
+                else:
+                    #Dealer play:
+                    print(f"Dealer's Face Down Card was:{dealer_hand_before[0]}")
 
-                print("Table:", dealer_hand_before)
-                print("The Dealer Draws:")
-                print(f"Table Cards: {dealer_hand_after}")
-                cash = determine_winner(new_hand, dealer_hand_after, bet, cash)
+                    print("Table:", dealer_hand_before)
+                    print("The Dealer Draws:")
+                    print(f"Table Cards: {dealer_hand_after}")
+                    cash = determine_winner(new_hand, dealer_hand_after, bet, cash)
         return cash
     else:
         return game(cash, deck, bet, hand)
@@ -366,8 +379,6 @@ def start():
 
             for i in h:
                 hand.append(i)
-            
-            hand = [6,6]
 
             if can_split(hand, cash, bet):
                 cash = split_pairs(hand, deck, cash, bet)
