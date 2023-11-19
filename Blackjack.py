@@ -131,37 +131,108 @@ def determine_winner(player_hand, dealer_hand, bet, cash):
         return cash
 
     if dealer_score > 21:
-        print("Dealer busts! Player wins.")
+        print(f"Dealer is busted. You win ${bet}")
         return cash + 2 * bet
 
     if player_score == dealer_score:
-        print("It's a tie!")
+        print("It's a tie. You got your bet back")
         return cash + bet
 
     if player_score > dealer_score:
-        print("Player wins!")
+        print(f"You Win! You won ${bet}")
         return cash + 2 * bet
 
     print("The Dealer won! Better luck next time...")
     print(f"Remaining Cash: ${cash}")
     return cash
 
-def game(cash, deck, bet):
-    busted=False
+def double_down(deck, hand, bet):
+    dd_choice = input("Do you want to double your bet? (y/n)").lower()
+
+    if dd_choice =='y':
+        bet *= 2 #doubling bet
+        print(f"Your bet is now ${bet}")
+
+    # Deal one additional card after doubling down
+    deck, additional_card = shuffle_deal(deck, 1)
+    hand.append(additional_card[0])
+    print(f"Your Hand after double down: {hand}")
+
+def can_split(hand, remaining_cash, bet):
+    return len(hand) == 2 and hand[0] == hand[1] and remaining_cash >= bet
     
-    #Hand is the players hand, FDC is the dealers facedown card, table is the dealer's face up card
-    hand=[]
+def split_pairs(hand, deck, cash, bet):
+    deck,dealer_hand_before=shuffle_deal(deck,2) # Dealer hand (one face down and one face up)
+    new_hands = [hand[0], hand[1]]  # Split the hand into two separate hands
+    dealer_hand_after = dealer_play(deck, dealer_hand_before)
+    busted = False
+    
+    choice = input("Do you want to split? Enter 'y' or 'n': ")
+    if choice.lower() == 'y':
+        for idx, new_hand in enumerate(new_hands):
+            deck, h = shuffle_deal(deck,1)
+            new_hand = [new_hand, h[0]]
+            print(f"\nPlaying Hand {idx + 1}: {new_hand}")
+            print(f"Dealer Cards: [Face Down Card, {dealer_hand_before[1]}]")
+            while True:
+                I = input("Decision time: enter s to stand or h to hit. Enter i for instructions or q to quit")
+                if type(I)!= str:
+                    print("Invalid Input, please try again!.")
+                    continue
+                if I=='i':
+                    show_instructions()
+                    continue
+
+                if I == 'h':
+                    new_hand = player_hit(deck, new_hand)
+                    print(f"Your Hand: {new_hand}")
+                    HS=score(new_hand)
+
+                    if HS>21:
+                        print("You're busted")
+                        busted=True
+                        break
+                    else:
+                        continue
+
+                if I == 's' or I=='q':
+                    break
+
+            #Mid-game Quit:
+            if I == 'q':
+                cash = "Q"
+            
+            if busted==True:
+                print("Better luck next round!")
+                if idx == 1:
+                    cash -= bet
+                else:
+                    cash = cash
+                print(f"Remaining money: ${cash}")
+            else:
+                #Dealer play:
+                print(f"Dealer's Face Down Card was:{dealer_hand_before[0]}")
+
+                print("Table:", dealer_hand_before)
+                print("The Dealer Draws:")
+                print(f"Table Cards: {dealer_hand_after}")
+                cash = determine_winner(new_hand, dealer_hand_after, bet, cash)
+        return cash
+    else:
+        return game(cash, deck, bet, hand)
+
+def game(cash, deck, bet, hand):
+    busted=False
+
+    #FDC is the dealers facedown card, table is the dealer's face up card
     FDC=[]
     table=['Face Down Card']
 
     #Dealing cards
     #It is formatted like this bc: the shuffle_deal function outputs the new deck and the dealt cards
-    deck,h=shuffle_deal(deck,2)
     deck,f=shuffle_deal(deck,1)
     deck,t=shuffle_deal(deck,1)
 
-    for i in h:
-        hand.append(i)
     for i in f:
         FDC.append(i)
     for i in t:
@@ -175,16 +246,7 @@ def game(cash, deck, bet):
     initial_numeric_hand = score(hand)
 
     if initial_numeric_hand is not None and initial_numeric_hand in [9, 10, 11]:
-        dd_choice = input("Do you want to double your bet? (y/n)").lower()
-
-        if dd_choice =='y':
-            bet *= 2 #doubling bet
-            print(f"Your bet is now ${bet}")
-
-        # Deal one additional card after doubling down
-        deck, additional_card = shuffle_deal(deck, 1)
-        hand.append(additional_card[0])
-        print(f"Your Hand after double down: {hand}")
+        double_down(deck, hand, bet)
 
     HS=score(hand)
     TS=score(table[1:])+score(FDC)
@@ -242,14 +304,15 @@ def game(cash, deck, bet):
         table.append(FDC[0])
 
         print("Table:", table)
-        TS=score(table)
+        # TS=score(table)
 
         #This is to force the dealer to draw
         table = dealer_play(deck, table)
         print("The Dealer Draws:")
         print(f"Table Cards: {table}")
-        TS = score(table)
+        # TS = score(table)
         return determine_winner(hand, table, bet, cash)
+
     
 #============= This is the function that actually starts the game. Think of it as a main menu
 def start():
@@ -294,7 +357,22 @@ def start():
             deck = Hearts + Clubs + Spades + Diamonds
             cash,bet=set_bet(cash)
             print(f"Remaining cash: ${cash}")
-            cash=game(cash,deck,bet)
+
+            #Player's hand
+            hand=[]
+
+            #Dealing cards
+            deck,h=shuffle_deal(deck,2)
+
+            for i in h:
+                hand.append(i)
+            
+            hand = [6,6]
+
+            if can_split(hand, cash, bet):
+                cash = split_pairs(hand, deck, cash, bet)
+            else:
+                cash=game(cash, deck, bet, hand)
             
             #To ask players if they want another game
             while True:
