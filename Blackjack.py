@@ -345,6 +345,8 @@ def start():
     """
     print("Welcome to Pyjack!")
 
+    round_number = 1
+
     while True:
         C = input("Please Enter b to start the game, i to read the instructions, or q to quit")
         if type(C)!= str:
@@ -355,6 +357,7 @@ def start():
             show_instructions()
         if C=='q' or C=='b':
             break
+
     if C=='b':
     # Difficulty level determines amount of cash the player is given
         difficulty_level = str(input('Choose difficulty (easy/medium/hard):')).lower()
@@ -368,6 +371,7 @@ def start():
         limit = cash * 20
 
         while cash > 0:
+            print(f"\n-------------------- Round {round_number} --------------------")
             Hearts = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A']
             Clubs = Hearts.copy()
             Spades = Hearts.copy()
@@ -398,6 +402,7 @@ def start():
                     cash='Q'
                     break
                 if A =='y':
+                    round_number += 1
                     break
                 else:
                     print("Input not understood. Please try again.")
