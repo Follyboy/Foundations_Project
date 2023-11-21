@@ -178,64 +178,66 @@ def split_pairs(hand, deck, cash, bet):
         for idx, new_hand in enumerate(new_hands):
             deck, h = shuffle_deal(deck,1)
             new_hand = [new_hand, h[0]]
-            print(f"\nPlaying Hand {idx + 1}: {new_hand}")
-            print(f"Dealer Cards: [Face Down Card, {dealer_hand_before[1]}]")
-
-            HS=score(new_hand)
-            TS=score(dealer_hand_after)
-            if HS == 21 and TS==21:
-                cash = cash + bet
-                I = 's'
-                print('It\'s a tie, you get your money back.')
-                #Need an End Condition
-            elif HS==21:
-                #Instant Win
-                I = 's'
-                cash = cash + 2 * bet
-                print(f"Black Jack! You Win ${bet}!")
-                #Need an End
+            if can_split(new_hand, cash, bet):
+                cash=split_pairs(new_hand, deck, cash, bet)
             else:
-                while True:
-                    I = input("Decision time: enter s to stand or h to hit. Enter i for instructions or q to quit")
-                    if type(I)!= str:
-                        print("Invalid Input, please try again!.")
-                        continue
-                    if I=='i':
-                        show_instructions()
-                        continue
+                print(f"\nPlaying Hand {idx + 1}: {new_hand}")
+                print(f"Dealer Cards: [Face Down Card, {dealer_hand_before[1]}]")
 
-                    if I == 'h':
-                        new_hand = player_hit(deck, new_hand)
-                        print(f"Your Hand: {new_hand}")
-                        HS=score(new_hand)
-                        print(f"Your Score: {HS}")
-
-                        if HS>21:
-                            print("You're busted")
-                            busted=True
-                            break
-                        else:
+                HS=score(new_hand)
+                TS=score(dealer_hand_after)
+                if HS == 21 and TS==21:
+                    cash = cash + bet
+                    I = 's'
+                    print('It\'s a tie, you get your money back.')
+                elif HS==21:
+                    #Instant Win
+                    I = 's'
+                    jackpot_bet = (bet * 1.5) + bet
+                    cash = cash + jackpot_bet
+                    print(f"Black Jack! You Win ${jackpot_bet:.2f}!")
+                else:
+                    while True:
+                        I = input("Decision time: enter s to stand or h to hit. Enter i for instructions or q to quit")
+                        if type(I)!= str:
+                            print("Invalid Input, please try again!.")
+                            continue
+                        if I=='i':
+                            show_instructions()
                             continue
 
-                    if I == 's' or I=='q':
-                        break
+                        if I == 'h':
+                            new_hand = player_hit(deck, new_hand)
+                            print(f"Your Hand: {new_hand}")
+                            HS=score(new_hand)
+                            print(f"Your Score: {HS}")
 
-                #Mid-game Quit:
-                if I == 'q':
-                    cash = "Q"
-                
-                if busted==True:
-                    print("Better luck next round!")
-                    print(f"Remaining money: ${cash}")
-                    cash = cash
-                else:
-                    #Dealer play:
-                    print(f"Dealer's Face Down Card was:{dealer_hand_before[0]}")
+                            if HS>21:
+                                print("You're busted")
+                                busted=True
+                                break
+                            else:
+                                continue
 
-                    print("Table:", dealer_hand_before)
-                    print("The Dealer Draws:")
-                    print(f"Table Cards: {dealer_hand_after}")
-                    cash = determine_winner(new_hand, dealer_hand_after, bet, cash)
+                        if I == 's' or I=='q':
+                            break
+
+                    #Mid-game Quit:
+                    if I == 'q':
+                        cash = "Q"
+                    
+                    if busted==True:
+                        print("Better luck next round!")
+                        print(f"Remaining money: ${cash}")
+                        cash = cash
+                    else:
+                        #Dealer play:
+                        print(f"Dealer's Face Down Card was:{dealer_hand_before[0]}")
+
+                        print("Table:", dealer_hand_before)
+                        print("The Dealer Draws:")
+                        print(f"Table Cards: {dealer_hand_after}")
+                        cash = determine_winner(new_hand, dealer_hand_after, bet, cash)
         return cash
     else:
         return game(cash, deck, bet, hand)
@@ -271,67 +273,69 @@ def game(cash, deck, bet, hand):
     TS=score(table[1:])+score(FDC)
     if HS == 21 and TS==21:
         cash= cash+bet
-        #Need an End Condition
+        print('It\'s a tie, you get your money back.')
+        return cash
     elif HS==21:
         #Instant Win
-        cash=cash+2*bet
-        #Need an End
-    elif TS==21:
-        print("eek")
-        #End
-    print(f"Your Score: {HS}")
-    print(f"Your bet: ${bet}")
-   #This is where the player can choose to stand or hit (or get instructions/ quit)
-    while True:
-        I = input("Decision time: enter s to stand or h to hit. Enter i for instructions or q to quit")
-        if type(I)!= str:
-            print("Invalid Input, please try again!.")
-            continue
-        if I=='i':
-            show_instructions()
-            continue
-
-        if I == 'h':
-            hand = player_hit(deck, hand)
-            print(f"Your Hand: {hand}")
-            HS=score(hand)
-            print(f"Your Score: {HS}")
-
-            if HS>21:
-                print("You're busted")
-                busted=True
-                break
-            else:
-                continue
-
-        if I == 's' or I=='q':
-            break
-
-    #Mid-game Quit:
-    if I == 'q':
-        return ("Q")
-    
-    #This condition triggers if the player is busted. Instantly loses the game
-    if busted==True:
-        print("Better luck next round!")
-        print(f"Remaining money: ${cash}")
+        I = 's'
+        jackpot_bet = (bet * 1.5) + bet
+        cash = cash + jackpot_bet
+        print(f"Black Jack! You Win ${jackpot_bet:.2f}!")
         return cash
     else:
-        #Dealer play:
-        print(f"Dealer's Face Down Card was:{FDC[0]}")
+        print(f"Your Score: {HS}")
+        print(f"Your bet: ${bet}")
+        #This is where the player can choose to stand or hit (or get instructions/ quit)
+        while True:
+            I = input("Decision time: enter s to stand or h to hit. Enter i for instructions or q to quit")
+            if type(I)!= str:
+                print("Invalid Input, please try again!.")
+                continue
+            if I=='i':
+                show_instructions()
+                continue
 
-        table=table[1:]
-        table.append(FDC[0])
+            if I == 'h':
+                hand = player_hit(deck, hand)
+                print(f"Your Hand: {hand}")
+                HS=score(hand)
+                print(f"Your Score: {HS}")
 
-        print("Table:", table)
-        # TS=score(table)
+                if HS>21:
+                    print("You're busted")
+                    busted=True
+                    break
+                else:
+                    continue
 
-        #This is to force the dealer to draw
-        table = dealer_play(deck, table)
-        print("The Dealer Draws:")
-        print(f"Table Cards: {table}")
-        # TS = score(table)
-        return determine_winner(hand, table, bet, cash)
+            if I == 's' or I=='q':
+                break
+
+        #Mid-game Quit:
+        if I == 'q':
+            return ("Q")
+        
+        #This condition triggers if the player is busted. Instantly loses the game
+        if busted==True:
+            print("Better luck next round!")
+            print(f"Remaining money: ${cash}")
+            return cash
+        else:
+            #Dealer play:
+            print(f"Dealer's Face Down Card was:{FDC[0]}")
+
+            table=table[1:]
+            table.append(FDC[0])
+
+            print("Table:", table)
+            # TS=score(table)
+
+            #This is to force the dealer to draw
+            table = dealer_play(deck, table)
+            print("The Dealer Draws:")
+            print(f"Table Cards: {table}")
+            # TS = score(table)
+            return determine_winner(hand, table, bet, cash)
 
     
 #============= This is the function that actually starts the game. Think of it as a main menu
@@ -389,6 +393,12 @@ def start():
 
             for i in h:
                 hand.append(i)
+
+            # The comment hand below is for testing black jack win
+            # hand = [10, 'A']
+
+            # The comment hand below is for testing the split function
+            # hand = [10, 10]
 
             if can_split(hand, cash, bet):
                 cash = split_pairs(hand, deck, cash, bet)
