@@ -40,28 +40,33 @@ def set_bet(cash):
     Set the bet for the round.
     Returns the adjusted cash and the new bet.
     """
-    #Take a bet as input
-    bet=eval(input(f"How much of your ${cash} do you want to bet on this round (minimum $0.01)?") or cash//10)
-    #Make sure that the player is entering a number. As to not quit the program, theres a default value
-    if (type(bet) != int) and (type(bet) != float):
-        print("That's not a valid bet! We will be using 10% of your money instead")
-        bet=round(cash/10,2)
-    #This is to ensure that they dont bet more than they have
-    if bet<0.01:
-        print("Too low of a bet, we are rounding up your bet to the minimum")
-        bet=0.01
-    if bet>cash:
-        print("Woah there! You don't have that much Cash right now. Looks like your going all in")
-        bet=cash
+    # Take a bet as input
+    bet = st.number_input(f"How much of your ${cash} do you want to bet on this round (minimum $0.01)?",
+                          min_value=0.01, value=cash // 10)
+    
+    # Make sure that the player is entering a valid number
+    if not isinstance(bet, (int, float)):
+        st.warning("That's not a valid bet! We will be using 10% of your money instead")
+        bet = round(cash / 10, 2)
 
-    #Rounding down the bet to 2 decimals
-    bet=round(bet,2)
-    print(f"Bet= ${bet}")
-    #Subtracting bet on the table from cash
-    cash=round(cash-bet,2)
-    print(f"Remaining Money: ${cash}")
-    #Returns both the adjusted cash and new bet
-    return(cash,bet)
+    # Ensure they don't bet more than they have
+    if bet < 0.01:
+        st.warning("Too low of a bet, we are rounding up your bet to the minimum")
+        bet = 0.01
+    if bet > cash:
+        st.warning("Woah there! You don't have that much cash right now. Looks like you're going all in")
+        bet = cash
+
+    # Rounding down the bet to 2 decimals
+    bet = round(bet, 2)
+    st.info(f"Bet= ${bet}")
+
+    # Subtracting bet on the table from cash
+    cash = round(cash - bet, 2)
+    st.info(f"Remaining Money: ${cash}")
+
+    # Returns both the adjusted cash and new bet
+    return cash, bet
 #===================== NEED TO FINISH THE INSTRUCTIONS FUNCTION===========================VVVVV
 def show_instructions():
     """
