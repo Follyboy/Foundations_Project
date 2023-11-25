@@ -44,7 +44,7 @@ def set_bet(cash):
     Returns the adjusted cash and the new bet.
     """
     #Take a bet as input
-    bet=eval(input(f"How much of your ${cash} do you want to bet on this round (minimum $0.01)?") or cash//10)
+    bet=eval(input(f"How much of your ${round(cash,3)} do you want to bet on this round (minimum $0.01)?") or cash//10)
     #Make sure that the player is entering a number. As to not quit the program, theres a default value
     if (type(bet) != int) and (type(bet) != float):
         print("That's not a valid bet! We will be using 10% of your money instead")
@@ -64,8 +64,8 @@ def set_bet(cash):
     cash=round(cash-bet,2)
     print(f"Remaining Money: ${cash}")
     #Returns both the adjusted cash and new bet
-    return(cash,bet)
-#===================== NEED TO FINISH THE INSTRUCTIONS FUNCTION===========================VVVVV
+    return(round(cash,3),bet)
+
 def show_instructions():
     instructions = """ Get ready to play Blackjack!
 
@@ -197,7 +197,7 @@ def game(cash, deck, bet):
     if busted==True:
         print("Better luck next round!")
         print(f"Remaining money: ${cash}")
-        return(cash)
+        return(round(cash,3))
     else:
         #Dealer play:
         print(f"Dealer's Face Down Card was:{FDC[0]}")
@@ -224,7 +224,7 @@ def game(cash, deck, bet):
         if TS>21:
             print(f"Dealer is busted. You win ${bet}")
             cash+= (2*bet)
-            return(cash)
+            return(round(cash,3))
         HS = score(hand)
         #Player beats dealer
         if HS > TS:
@@ -235,12 +235,12 @@ def game(cash, deck, bet):
         elif HS == TS:
             print("Its a tie. You got your bet back")
             cash+=bet
-            return(cash)
+            return(round(cash,3))
         #Player loses to dealer
         else:
             print("The Dealer won! Better luck next time...")
             print(f"Remaining Cash: ${cash}")
-            return(cash)
+            return(round(cash,3))
         
 #============= This is the function that actually starts the game. Think of it as a main menu
 def start():
