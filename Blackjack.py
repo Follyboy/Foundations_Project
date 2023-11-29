@@ -143,14 +143,15 @@ def game(cash, deck, bet):
                 bet *= 2 #doubling bet
                 cash-=bet
                 print(f"Your bet is now ${bet}")
+                deck, additional_card = shuffle_deal(deck, 1)
+                hand.append(additional_card[0])
+                print(f"Your Hand after double down: {hand}")
             else:
                 print("You don't have the money to double your bet")
 
 
         # Deal one additional card after doubling down
-        deck, additional_card = shuffle_deal(deck, 1)
-        hand.append(additional_card[0])
-        print(f"Your Hand after double down: {hand}")
+
 
     HS=score(hand)
     TS=score(table[1:])+score(FDC)
@@ -316,14 +317,6 @@ def start():
     return()
 
 start()
-
-#THINGS TO DO:
-#We need to modify the game function to include special rules: Double Down, Insurance, Splitting pairs
-#Here are the instructions I am working from: https://bicyclecards.com/how-to-play/blackjack
-#We need to figure out how to implement the difficulty setting
-#Still need to modualize it (idk how to do that I assume we will learn in class)
-#Possibly card text art function ?
-#make sure when they double down that they don't bet more than they have?
 
 
 
