@@ -436,13 +436,6 @@ def start():
 
 start()
 
-#THINGS TO DO:
-#We need to modify the game function to include special rules: Double Down, Insurance, Splitting pairs
-#Here are the instructions I am working from: https://bicyclecards.com/how-to-play/blackjack
-#We need to figure out how to implement the difficulty setting
-#Still need to modualize it (idk how to do that I assume we will learn in class)
-#Possibly card text art function ?
-#make sure when they double down that they don't bet more than they have?
 
 
 
