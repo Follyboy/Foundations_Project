@@ -345,6 +345,5 @@ def start_game():
 
             st.info("Thanks for Playing! See you soon!")
 
-start_game()
+#start_game()
 
-  
