@@ -31,9 +31,10 @@ def score(cards_input):
     return score
 
 def set_bet(cash):
-    bet = st.number_input(f"How much of your ${cash} do you want to bet on this round (minimum $0.01)?",
-                          min_value=0.01, value=float(cash)//10)
-
+    # bet = st.number_input(f"""How much of your ${cash} do you want to bet on this round (minimum $0.01)?""",
+    #                       min_value=0.01, value=float(cash)//10)
+    st.markdown(f"How much do you want to bet on this round (minimum $0.01)? Remaining Cash: {cash}")
+    bet = st.number_input("", min_value=0.01, value=float(cash) // 10)
     if bet > cash:
         st.warning("Woah there! You don't have that much Cash right now. Looks like you're going all in.")
         bet = cash
@@ -345,5 +346,5 @@ def start_game():
 
             st.info("Thanks for Playing! See you soon!")
 
-#start_game()
+start_game()
 
