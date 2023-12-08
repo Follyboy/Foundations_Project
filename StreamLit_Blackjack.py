@@ -31,44 +31,50 @@ def score(cards_input):
     return score
 
 def set_bet(cash):
-    bet = st.number_input(f"How much of your ${cash} do you want to bet on this round (minimum $0.01)?",
-                          min_value=0.01, value=float(cash)//10)
+    bet = st.number_input(f"How much of your \${cash} do you want to bet on this round (minimum $0.01)?",
+                          min_value=0.01, max_value=float(cash), value=float(cash)//10, step=1.0)
 
-    if bet > cash:
-        st.warning("Woah there! You don't have that much Cash right now. Looks like you're going all in.")
-        bet = cash
+    if st.button("Confirm", key="confirm_key"):
+        if bet>cash:
+            st.warning("Woah there! You don't have that much Cash right now. Looks like your going all in")
+            bet=cash
 
-    bet = round(bet, 2)
-    st.write(f"Bet = ${bet}")
+        #Rounding down the bet to 2 decimals
+        bet=round(bet,2)
+        st.write(f"Bet= ${bet}")
 
-    cash = round(cash - bet, 2)
-    st.write(f"Remaining Money: ${cash}")
+        #Subtracting bet on the table from cash
+        cash=round(cash-bet,2)
+        st.write(f"Remaining Money: ${cash}")
 
-    return cash, bet
-
+        #Returns both the adjusted cash and new bet
+        return cash,bet
+    else:
+        st.write("Waiting for Bet")
+        return (cash, None)
 
 def show_instructions():
     """
     Display game instructions.
     """
     
-    st.text("Get ready to play Blackjack! The goal of the game is to have a hand with a total score as close to 21 as possible without exceeding it.")
+    st.write("Get ready to play Blackjack! The goal of the game is to have a hand with a total score as close to 21 as possible without exceeding it.")
 
-    st.text("Gameplay:")
-    st.text("1. At the beginning of each round, youll be prompted to place a bet using a portion of your available cash.")
-    st.text("2. The dealer will then shuffle the deck and deal two cards to you.")
-    st.text("3. Your hands score is calculated based on the values of the cards. Number cards contribute their face value, face cards (J, Q, K) contribute 10, and Aces can be either 1 or 11.")
-    st.text("4. You can choose to hit (receive an additional card) or stand (keep your current hand).")
-    st.text("5. Be strategic in your decisions. If your total score exceeds 21, you bust, and the round is lost.")
-    st.text("6. After you decide to stand, the dealer reveals their hand and follows a set of rules. The dealer will keep hitting until their hand is 17 or higher.")
-    st.text("7. The winner of the round is the one with a hand closest to 21 without busting.")
+    st.header("Gameplay:")
+    st.write("1. At the beginning of each round, youll be prompted to place a bet using a portion of your available cash.")
+    st.write("2. The dealer will then shuffle the deck and deal two cards to you.")
+    st.write("3. Your hands score is calculated based on the values of the cards. Number cards contribute their face value, face cards (J, Q, K) contribute 10, and Aces can be either 1 or 11.")
+    st.write("4. You can choose to hit (receive an additional card) or stand (keep your current hand).")
+    st.write("5. Be strategic in your decisions. If your total score exceeds 21, you bust, and the round is lost.")
+    st.write("6. After you decide to stand, the dealer reveals their hand and follows a set of rules. The dealer will keep hitting until their hand is 17 or higher.")
+    st.write("7. The winner of the round is the one with a hand closest to 21 without busting.")
 
-    st.text("Scoring:")
-    st.text("If you have an Ace and a 10-value card (10, J, Q, K) in your initial two cards, you have a blackjack and win the round instantly.")
+    st.header("Scoring:")
+    st.write("If you have an Ace and a 10-value card (10, J, Q, K) in your initial two cards, you have a blackjack and win the round instantly.")
  
 
 def choose_difficulty():
-    difficulty_level = st.radio("Choose difficulty:", ["Easy", "Medium", "Hard"])
+    difficulty_level = st.radio("Choose difficulty:", ["Easy", "Medium", "Hard"], key="radio_difficulty")
     cash = 0
 
     if difficulty_level == 'Hard':
@@ -241,16 +247,11 @@ def game(cash, deck, bet, hand):
         st.write(f"Your Score: {HS}")
         st.write(f"Your bet: ${bet}")
         #This is where the player can choose to stand or hit (or get instructions/ quit)
+        count = 1
         while True:
-            I = input("Decision time: enter s to stand or h to hit. Enter i for instructions or q to quit")
-            if type(I)!= str:
-                st.write("Invalid Input, please try again!.")
-                continue
-            if I=='i':
-                show_instructions()
-                continue
+            I = st.radio("Decision time:", ("Hit", "Stand"), key=f"radio_hit_{count}")
 
-            if I == 'h':
+            if I == 'Hit':
                 hand = player_hit(deck, hand)
                 st.write(f"Your Hand: {hand}")
                 HS=score(hand)
@@ -263,12 +264,8 @@ def game(cash, deck, bet, hand):
                 else:
                     continue
 
-            if I == 's' or I=='q':
+            if I == 'Stand':
                 break
-
-        #Mid-game Quit:
-        if I == 'q':
-            return ("Q")
         
         #This condition triggers if the player is busted. Instantly loses the game
         if busted==True:
@@ -298,19 +295,22 @@ def start_game():
     round_number = 1
 
     while True:
-        C = st.sidebar.radio("Select an option:", ["Start Game", "Instructions", "Quit"])
+        sidebar_selection = st.sidebar.empty()
+        C = sidebar_selection.radio("Select an option:", ["Start Game", "Instructions", "Quit"])
 
         if C == "Instructions":
             show_instructions()
-
-        if C == "Quit":
             break
 
-        if C == "Start Game":
-            cash = choose_difficulty()
+        if C == "Quit" or C == "Start Game":
+            break
 
-            limit = cash * 20
+    if C == "Start Game":
+        cash = choose_difficulty()
 
+        limit = cash * 20
+        
+        if st.button("Confirm", key="confirm_difficulty"):
             while cash > 0:
                 st.header(f" Round {round_number} ")
                 Hearts = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A']
@@ -321,7 +321,7 @@ def start_game():
                 cash, bet = set_bet(cash)
                 hand = []
                 deck, h = shuffle_deal(deck, 2)
-
+                
                 for i in h:
                     hand.append(i)
 
@@ -330,9 +330,14 @@ def start_game():
                 else:
                     cash = game(cash, deck, bet, hand)
 
-                A = st.sidebar.radio("Another Round?", ["Yes", "No"])
-                if A == "No":
-                    break
+                while True:
+                    A = st.radio("Another Round?", ["Yes", "No"], key=f"round_{round_number}_radio")
+                    if A == "No":
+                        st.stop()
+
+                    if A =='Yes':
+                        round_number += 1
+                        break
 
                 if cash > limit:
                     st.success(f"You beat the house! Enjoy your (virtual) ${cash}")
@@ -345,5 +350,7 @@ def start_game():
 
             st.info("Thanks for Playing! See you soon!")
 
-#start_game()
+start_game()
 
+
+# %%
