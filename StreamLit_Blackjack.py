@@ -348,7 +348,7 @@ def start_game():
                     st.error("Tough Luck. You are out of cash. See you later!")
                     break
 
-            st.info("Thanks for Playing! See you soon!")
+                st.info("Thanks for Playing! See you soon!")
 
 start_game()
 
