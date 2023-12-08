@@ -31,13 +31,13 @@ def score(cards_input):
     return score
 
 def set_bet(cash):
-    bet = st.number_input(f"How much of your \${cash} do you want to bet on this round (minimum $0.01)?",
-                          min_value=0.01, max_value=float(cash), value=float(cash)//10, step=1.0)
-
-    if st.button("Confirm", key="confirm_key"):
-        if bet>cash:
-            st.warning("Woah there! You don't have that much Cash right now. Looks like your going all in")
-            bet=cash
+    # bet = st.number_input(f"""How much of your ${cash} do you want to bet on this round (minimum $0.01)?""",
+    #                       min_value=0.01, value=float(cash)//10)
+    st.markdown(f"How much do you want to bet on this round (minimum $0.01)? Remaining Cash: {cash}")
+    bet = st.number_input("", min_value=0.01, value=float(cash) // 10)
+    if bet > cash:
+        st.warning("Woah there! You don't have that much Cash right now. Looks like you're going all in.")
+        bet = cash
 
         #Rounding down the bet to 2 decimals
         bet=round(bet,2)
@@ -123,7 +123,20 @@ def determine_winner(player_hand, dealer_hand, bet, cash):
 
 def double_down(deck, hand, bet, cash):
     # Your existing code for doubling down remains the same
-    pass
+    dd_choice = st.radio("Do you want to double your bet?",["Yes", "No"])
+
+    if dd_choice == 'Yes':
+        if bet < cash:
+            bet *= 2  # doubling bet
+            cash -= bet
+            st.write(f"Your bet is now ${bet}")
+        else:
+            st.write("You don't have the money to double your bet")
+
+    # Deal one additional card after doubling down
+    deck, additional_card = shuffle_deal(deck, 1)
+    hand.append(additional_card[0])
+    st.write(f"Your Hand after double down: {hand}")
 
 def can_split(hand, remaining_cash, bet):
     return len(hand) == 2 and hand[0] == hand[1] and remaining_cash >= bet
