@@ -118,7 +118,20 @@ def determine_winner(player_hand, dealer_hand, bet, cash):
 
 def double_down(deck, hand, bet, cash):
     # Your existing code for doubling down remains the same
-    pass
+    dd_choice = st.radio("Do you want to double your bet?",["Yes", "No"])
+
+    if dd_choice == 'Yes':
+        if bet < cash:
+            bet *= 2  # doubling bet
+            cash -= bet
+            st.write(f"Your bet is now ${bet}")
+        else:
+            st.write("You don't have the money to double your bet")
+
+    # Deal one additional card after doubling down
+    deck, additional_card = shuffle_deal(deck, 1)
+    hand.append(additional_card[0])
+    st.write(f"Your Hand after double down: {hand}")
 
 def can_split(hand, remaining_cash, bet):
     return len(hand) == 2 and hand[0] == hand[1] and remaining_cash >= bet
