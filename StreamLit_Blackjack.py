@@ -2,7 +2,12 @@
 # %%
 import streamlit as st
 import random
+import time
 
+# SessionState to maintain widget state
+class SessionState:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
 def shuffle_deal(deck, n):
     pile = []
@@ -30,14 +35,21 @@ def score(cards_input):
         aces -= 1
     return score
 
-def set_bet(cash):
-    # bet = st.number_input(f"""How much of your ${cash} do you want to bet on this round (minimum $0.01)?""",
-    #                       min_value=0.01, value=float(cash)//10)
-    st.markdown(f"How much do you want to bet on this round (minimum $0.01)? Remaining Cash: {cash}")
-    bet = st.number_input("", min_value=0.01, value=float(cash) // 10)
-    if bet > cash:
-        st.warning("Woah there! You don't have that much Cash right now. Looks like you're going all in.")
-        bet = cash
+def set_bet(cash, round_number):
+    session_state = SessionState(run_button=False)
+    
+    # while True:
+    bet = st.number_input(f"How much of your \${cash} do you want to bet on this round (minimum $0.01)?",
+                        min_value=0.01, max_value=float(cash), value=float(cash)//10, step=1.0, key=f"number_input_{round_number}")
+    
+
+    if st.button("Confirm", key=f"confirm_key"):
+        session_state.run_button = not session_state.run_button
+
+    while session_state.run_button:
+        if bet>cash:
+            st.warning("Woah there! You don't have that much Cash right now. Looks like your going all in")
+            bet=cash
 
         #Rounding down the bet to 2 decimals
         bet=round(bet,2)
@@ -49,9 +61,6 @@ def set_bet(cash):
 
         #Returns both the adjusted cash and new bet
         return cash,bet
-    else:
-        st.write("Waiting for Bet")
-        return (cash, None)
 
 def show_instructions():
     """
@@ -123,20 +132,7 @@ def determine_winner(player_hand, dealer_hand, bet, cash):
 
 def double_down(deck, hand, bet, cash):
     # Your existing code for doubling down remains the same
-    dd_choice = st.radio("Do you want to double your bet?",["Yes", "No"])
-
-    if dd_choice == 'Yes':
-        if bet < cash:
-            bet *= 2  # doubling bet
-            cash -= bet
-            st.write(f"Your bet is now ${bet}")
-        else:
-            st.write("You don't have the money to double your bet")
-
-    # Deal one additional card after doubling down
-    deck, additional_card = shuffle_deal(deck, 1)
-    hand.append(additional_card[0])
-    st.write(f"Your Hand after double down: {hand}")
+    pass
 
 def can_split(hand, remaining_cash, bet):
     return len(hand) == 2 and hand[0] == hand[1] and remaining_cash >= bet
@@ -260,25 +256,28 @@ def game(cash, deck, bet, hand):
         st.write(f"Your Score: {HS}")
         st.write(f"Your bet: ${bet}")
         #This is where the player can choose to stand or hit (or get instructions/ quit)
-        count = 1
+        if 'decision_count' not in st.session_state:
+            st.session_state.decision_count = 1
         while True:
-            I = st.radio("Decision time:", ("Hit", "Stand"), key=f"radio_hit_{count}")
+            I = st.radio("Decision time:", ("Hit", "Stand"), key=f"radio_hit_{st.session_state.decision_count}")
+            
+            if st.button("Confirm", key=f"confirm_decision_{st.session_state.decision_count}"):
+                if I == 'Hit':
+                    hand = player_hit(deck, hand)
+                    st.write(f"Your Hand: {hand}")
+                    HS=score(hand)
+                    st.write(f"Your Score: {HS}")
 
-            if I == 'Hit':
-                hand = player_hit(deck, hand)
-                st.write(f"Your Hand: {hand}")
-                HS=score(hand)
-                st.write(f"Your Score: {HS}")
+                    if HS>21:
+                        st.write("You're busted")
+                        busted=True
+                        break
+                    else:
+                        continue
 
-                if HS>21:
-                    st.write("You're busted")
-                    busted=True
+                if I == 'Stand':
                     break
-                else:
-                    continue
 
-            if I == 'Stand':
-                break
         
         #This condition triggers if the player is busted. Instantly loses the game
         if busted==True:
@@ -305,8 +304,6 @@ def game(cash, deck, bet, hand):
 def start_game():
     st.title("Welcome to Pyjack!")
 
-    round_number = 1
-
     while True:
         sidebar_selection = st.sidebar.empty()
         C = sidebar_selection.radio("Select an option:", ["Start Game", "Instructions", "Quit"])
@@ -319,49 +316,72 @@ def start_game():
             break
 
     if C == "Start Game":
-        cash = choose_difficulty()
+        if 'cash' not in st.session_state:
+            st.session_state.cash = choose_difficulty()
+        if 'round_number' not in st.session_state:
+            st.session_state.round_number = 1
 
-        limit = cash * 20
+        limit = st.session_state.cash * 20
         
-        if st.button("Confirm", key="confirm_difficulty"):
-            while cash > 0:
-                st.header(f" Round {round_number} ")
-                Hearts = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A']
-                Clubs = Hearts.copy()
-                Spades = Hearts.copy()
-                Diamonds = Hearts.copy()
-                deck = Hearts + Clubs + Spades + Diamonds
-                cash, bet = set_bet(cash)
-                hand = []
-                deck, h = shuffle_deal(deck, 2)
-                
-                for i in h:
-                    hand.append(i)
+        while st.session_state.cash > 0:
+            st.header(f" Round {st.session_state.round_number} ")
+            Hearts = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A']
+            Clubs = Hearts.copy()
+            Spades = Hearts.copy()
+            Diamonds = Hearts.copy()
+            deck = Hearts + Clubs + Spades + Diamonds
 
-                if can_split(hand, cash, bet):
-                    cash = split_pairs(hand, deck, cash, bet)
-                else:
-                    cash = game(cash, deck, bet, hand)
+            bet = st.number_input(f"How much of your \${st.session_state.cash} do you want to bet on this round (minimum $0.01)?",
+                        min_value=0.01, max_value=float(st.session_state.cash), value=float(st.session_state.cash)//10, step=1.0, key=f"number_input_{st.session_state.round_number}")
 
-                while True:
-                    A = st.radio("Another Round?", ["Yes", "No"], key=f"round_{round_number}_radio")
-                    if A == "No":
-                        st.stop()
 
-                    if A =='Yes':
-                        round_number += 1
+            if st.button("Confirm", key=f"confirm_key_{st.session_state.round_number}"):
+                if bet>st.session_state.cash:
+                        st.warning("Woah there! You don't have that much Cash right now. Looks like your going all in")
+                        bet=st.session_state.cash
                         break
 
-                if cash > limit:
-                    st.success(f"You beat the house! Enjoy your (virtual) ${cash}")
-                    break
+                #Rounding down the bet to 2 decimals
+                bet=round(bet,2)
+                st.write(f"Bet= ${bet}")
 
-                if cash == 0:
-                    st.warning(f"Money: ${cash}")
-                    st.error("Tough Luck. You are out of cash. See you later!")
-                    break
+                #Subtracting bet on the table from cash
+                st.session_state.cash=round(st.session_state.cash-bet,2)
+                st.write(f"Remaining Money: ${st.session_state.cash}")
 
-                st.info("Thanks for Playing! See you soon!")
+                if bet is not None:
+                    hand = []
+                    deck, h = shuffle_deal(deck, 2)
+                    
+                    for i in h:
+                        hand.append(i)
+
+                    if can_split(hand, st.session_state.cash, bet):
+                        st.session_state.cash = split_pairs(hand, deck, st.session_state.cash, bet)
+                    else:
+                        st.session_state.cash = game(st.session_state.cash, deck, bet, hand)
+
+                    while True:
+                        A = st.radio("Another Round?", ["Yes", "No"], key=f"round_{st.session_state.round_number}_radio")
+                        if A == "No":
+                            st.stop()
+
+                        if A =='Yes':
+                            st.session_state.round_number += 1
+                            break
+
+                    if st.session_state.cash > limit:
+                        st.success(f"You beat the house! Enjoy your (virtual) ${st.session_state.cash}")
+                        break
+
+                    if st.session_state.cash == 0:
+                        st.warning(f"Money: ${st.session_state.cash}")
+                        st.error("Tough Luck. You are out of cash. See you later!")
+                        break
+            else:
+                break
+
+            # st.info("Thanks for Playing! See you soon!")
 
 start_game()
 
