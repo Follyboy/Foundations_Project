@@ -100,16 +100,23 @@ def show_instructions():
     print(instructions)
 
 def choose_difficulty(level):
+    # Initializes cash variable to zero
     cash = 0
+
+    # Converts the 'level' variable to lowercase
     level = level.lower()
+
+    # Checks the level and assigns cash accordingly
     if level == 'hard':
         cash = 100
     elif level == 'medium':
         cash = 300
     elif level == 'easy':
         cash = 500
-    
+
+    # Returns the assigned cash value based on the chosen level
     return cash
+
 
 def player_hit(deck, hand):
     deck,h=shuffle_deal(deck,1)
@@ -171,73 +178,95 @@ def split_pairs(hand, deck, cash, bet):
     new_hands = [hand[0], hand[1]]  # Split the hand into two separate hands
     dealer_hand_after = dealer_play(deck, dealer_hand_before)
     busted = False
-    
+
+    # Asks the user if they want to split
     choice = input("Do you want to split? Enter 'y' or 'n': ")
+
+    # Checks if the user's input (converted to lowercase) is 'y'
     if choice.lower() == 'y':
+        # Deducts the bet amount from the cash
         cash = cash - bet
+        
+        # Loops through each new hand
         for idx, new_hand in enumerate(new_hands):
-            deck, h = shuffle_deal(deck,1)
+            # Deals a new card from the deck
+            deck, h = shuffle_deal(deck, 1)
+            # Appends a new card to the current hand
             new_hand = [new_hand, h[0]]
+            
+            # Checks if the hand can be split
             if can_split(new_hand, cash, bet):
-                cash=split_pairs(new_hand, deck, cash, bet)
+                # Splits the pairs and updates cash if possible
+                cash = split_pairs(new_hand, deck, cash, bet)
             else:
+                # Prints the current player's hand and the dealer's visible card
                 print(f"\nPlaying Hand {idx + 1}: {new_hand}")
                 print(f"Dealer Cards: [Face Down Card, {dealer_hand_before[1]}]")
-
-                HS=score(new_hand)
-                TS=score(dealer_hand_after)
-                if HS == 21 and TS==21:
+                
+                # Calculates scores for the player's hand and the dealer's hand
+                HS = score(new_hand)
+                TS = score(dealer_hand_after)
+                
+                # Checks for different game outcomes (tie, blackjack, or ongoing game)
+                if HS == 21 and TS == 21:
                     cash = cash + bet
                     I = 's'
                     print('It\'s a tie, you get your money back.')
-                elif HS==21:
-                    #Instant Win
+                elif HS == 21:
+                    # Instant Win - Blackjack
                     I = 's'
                     jackpot_bet = (bet * 1.5) + bet
                     cash = cash + jackpot_bet
                     print(f"Black Jack! You Win ${jackpot_bet:.2f}!")
                 else:
+                    # Asks the player to make a decision (hit, stand, instructions, or quit)
                     while True:
                         I = input("Decision time: enter s to stand or h to hit. Enter i for instructions or q to quit")
-                        if type(I)!= str:
+                        if type(I) != str:
                             print("Invalid Input, please try again!.")
                             continue
-                        if I=='i':
+                        if I == 'i':
                             show_instructions()
                             continue
-
+                        
                         if I == 'h':
+                            # Player decides to hit, receives a new card and updates the hand
                             new_hand = player_hit(deck, new_hand)
                             print(f"Your Hand: {new_hand}")
-                            HS=score(new_hand)
+                            HS = score(new_hand)
                             print(f"Your Score: {HS}")
-
-                            if HS>21:
+                            
+                            # Checks if the player is busted (hand value over 21)
+                            if HS > 21:
                                 print("You're busted")
-                                busted=True
+                                busted = True
                                 break
                             else:
                                 continue
-
-                        if I == 's' or I=='q':
+                        
+                        if I == 's' or I == 'q':
                             break
-
-                    #Mid-game Quit:
+                    
+                    # Handles mid-game quitting
                     if I == 'q':
                         cash = "Q"
-                    
-                    if busted==True:
+                        
+                    if busted == True:
+                        # Prints a message for a busted hand
                         print("Better luck next round!")
                         print(f"Remaining money: ${cash}")
                         cash = cash
                     else:
-                        #Dealer play:
+                        # Dealer plays their turn
                         print(f"Dealer's Face Down Card was:{dealer_hand_before[0]}")
-
                         print("Table:", dealer_hand_before)
                         print("The Dealer Draws:")
                         print(f"Table Cards: {dealer_hand_after}")
+                        
+                        # Determines the winner and updates cash based on the outcome
                         cash = determine_winner(new_hand, dealer_hand_after, bet, cash)
+        
+        # Returns the final cash amount after the game
         return cash
     else:
         return game(cash, deck, bet, hand)
@@ -292,9 +321,11 @@ def game(cash, deck, bet, hand):
                 print("Invalid Input, please try again!.")
                 continue
             if I=='i':
+                # Show the instructions when i is entered
                 show_instructions()
                 continue
 
+            # When h is entered, the player hits and gets an additional card.
             if I == 'h':
                 hand = player_hit(deck, hand)
                 print(f"Your Hand: {hand}")
@@ -307,7 +338,8 @@ def game(cash, deck, bet, hand):
                     break
                 else:
                     continue
-
+            
+            # when s or q is entered, the loop is broken and other statements in the function is ran
             if I == 's' or I=='q':
                 break
 
