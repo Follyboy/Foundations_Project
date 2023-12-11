@@ -235,8 +235,9 @@ def split_pairs(hand, deck, cash, bet):
                         print(f"Dealer's Face Down Card was:{dealer_hand_before[0]}")
 
                         print("Table:", dealer_hand_before)
-                        print("The Dealer Draws:")
-                        print(f"Table Cards: {dealer_hand_after}")
+                        if dealer_hand_before!=dealer_hand_after:
+                            print("The Dealer Draws:")
+                            print(f"Current Table Cards: {dealer_hand_after}")
                         cash = determine_winner(new_hand, dealer_hand_after, bet, cash)
         return cash
     else:
