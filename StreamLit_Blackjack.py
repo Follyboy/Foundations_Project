@@ -272,11 +272,14 @@ def game(cash, deck, bet, hand):
                         st.write("You're busted")
                         busted=True
                         break
-                    else:
+                    else: 
+                        st.session_state.decision_count += 1
                         continue
 
                 if I == 'Stand':
                     break
+            else:
+                break
 
         
         #This condition triggers if the player is busted. Instantly loses the game
