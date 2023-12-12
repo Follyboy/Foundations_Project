@@ -13,7 +13,7 @@ Welcome to this simple command-line Blackjack game! This program allows you to p
 - Run the command: python Blackjack.py or python3 Blackjack.py depending on your Python setup.
 
 ### Running the game without cloning the repo
-- Run the command: pip install pyjack-foundations==1.1.0
+- Run the command: pip install pyjack-foundations
 - Run the command: pyjack_foundations
 - After running these commands, the game starts automatically
 
