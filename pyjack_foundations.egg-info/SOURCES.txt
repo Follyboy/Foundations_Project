@@ -1,0 +1,9 @@
+Blackjack.py
+LICENSE
+README.md
+setup.py
+pyjack_foundations.egg-info/PKG-INFO
+pyjack_foundations.egg-info/SOURCES.txt
+pyjack_foundations.egg-info/dependency_links.txt
+pyjack_foundations.egg-info/entry_points.txt
+pyjack_foundations.egg-info/top_level.txt

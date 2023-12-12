@@ -469,8 +469,9 @@ def start():
     print("Thanks for Playing! See you soon!")
     return()
 
-start()
 
+if __name__ == "__main__":
+    start()
 
 
 
