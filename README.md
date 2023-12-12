@@ -12,6 +12,11 @@ Welcome to this simple command-line Blackjack game! This program allows you to p
 - Navigate to the directory where the game files are located.
 - Run the command: python Blackjack.py or python3 Blackjack.py depending on your Python setup.
 
+### Running the game without cloning the repo
+- Run the command: pip install pyjack-foundations==1.1.0
+- Run the command: pyjack_foundations
+- After running these commands, the game starts automatically
+
 ## How does the game work?
 ### Objective:
 - The goal of the game is to have a hand with a total score as close to 21 as possible without exceeding it.
